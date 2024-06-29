@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: roshanam
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: dbmsdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./rm_oms_apis
+    # command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./fastapi_app:/code
+    environment:
+      - DATABASE_URL=postgresql://roshanam:password123@db:5432/dbmsdb
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./rm_oms_app
+    volumes:
+      - ./rm_oms_app:/app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
